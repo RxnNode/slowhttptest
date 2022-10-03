@@ -15,3 +15,6 @@ Check out [Wiki](https://github.com/shekyan/slowhttptest/wiki) for installation 
 
 Latest official image is available at [Docker Hub](https://hub.docker.com/repository/docker/shekyan/slowhttptest):
 `docker pull shekyan/slowhttptest:latest`
+
+# Modified #
+
