@@ -11,3 +11,5 @@ stamp-h1
 src/slowhttptest
 
 build/*
+.vscode/*
+test/*
