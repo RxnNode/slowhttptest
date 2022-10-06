@@ -33,6 +33,9 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <random>
+#include <iomanip> 
+
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -174,7 +177,7 @@ SlowHTTPTest::SlowHTTPTest(int delay, int duration,
                            int window_lower_limit,
                            int window_upper_limit,
                            ProxyType proxy_type,
-                           int debug_level)
+                           int debug_level, bool is_listQuery_mode)
     : probe_socket_(0),
       delay_(delay),
       duration_(duration),
@@ -198,7 +201,8 @@ SlowHTTPTest::SlowHTTPTest(int delay, int duration,
       window_upper_limit_(window_upper_limit),
       is_dosed_(false),
       proxy_type_(proxy_type),
-      debug_level_(debug_level) {
+      debug_level_(debug_level),
+      is_listQuery_mode_(is_listQuery_mode) {
 }
 
 SlowHTTPTest::~SlowHTTPTest() {
@@ -263,12 +267,49 @@ const char* SlowHTTPTest::get_random_extra() {
   return random_extra_.c_str();
 }
 
-bool SlowHTTPTest::init(const char* url, const char* verb,
-    const char* path, const char* proxy,
-    const char* content_type, const char* accept, const char* cookie) {
+bool SlowHTTPTest::init(const char* url, const char* verb, const char* path, const char* proxy,
+    const char* content_type, const char* accept, const char* cookie, const char* list_path) {
+  if(is_listQuery_mode_){
+    
+    FILE* list_ = fopen(list_path, "r");
+    if(list_ != NULL){
+      char temp[256];
+      value_.reserve(256);
+      while (fgets(temp, sizeof(temp), list_) != NULL){
+        if(temp[0] != '\n'){
+          temp[strcspn(temp, "\r\n")] = '\0';
+          std::stringstream sstemp;
+          std::string strTemp;
+          std::string strHex;
+          for(int i = 0; temp[i] != '\0'; i ++){
+             if(temp[i] == '_' || temp[i] == '-' || temp[i] == '.' || temp[i] == '~'){
+                strHex += temp[i];
+            }else if (temp[i] == ' ')
+            {
+                strHex += '+';
+            }else{
+                sstemp << std::uppercase<< std::setw(2) << std::setfill('0') << std::hex << int(temp[i]);
+                strTemp = sstemp.str();
+                if(strTemp.length() == 2){
+                    strHex += '%' + strTemp;
+                }else{
+                    strHex += '%' + strTemp.substr(6);
+                }
+                sstemp.str("");
+                sstemp.clear();
+            }
+          }
+          value_.push_back(strHex);
+        }
+      }
+      fclose(list_);
+    }else{
+      printf("Error while reading list file.");
+      return false;
+    }
+  }
   if(!change_fd_limits()) {
     slowlog(LOG_INFO, "error setting open file limits\n");
-    
   }
   if(!base_uri_.prepare(url)) {
     slowlog(LOG_FATAL, "Error parsing URL\n");
@@ -983,6 +1024,21 @@ bool SlowHTTPTest::run_test() {
 #else
           if(FD_ISSET(sock_[i]->get_sockfd(), &writefds)) { // write
 #endif
+            if(is_listQuery_mode_){
+              std::random_device rd;
+              std::mt19937 gen(rd());
+              std::uniform_int_distribution<> distrib(0, value_.size() - 1);
+              size_t found_HTTP = request_.find(" HTTP/1.1\r\n");
+              size_t found_pair = request_.find("?q=");
+              std::string pair  = "?q=" + value_[distrib(gen)];
+              if(found_HTTP != std::string::npos){
+                if(found_pair != std::string::npos){
+                  request_.replace(found_pair, (found_HTTP - found_pair), pair);
+                }else{
+                  request_.insert(found_HTTP, pair);
+                }
+              }
+            }
             if(sock_[i]->get_requests_to_send() > 0) {
               ret = sock_[i]->send_slow(request_.c_str(),
                   request_.size());
