@@ -72,12 +72,12 @@ class SlowHTTPTest {
    int probe_interval, int range_start,
    int range_limit, int read_interval,
    int read_len, int window_lower_limit,
-   int window_upper_limit, ProxyType proxy_type, int debug_level);
+   int window_upper_limit, ProxyType proxy_type, int debug_level, bool is_listQuery_mode);
   ~SlowHTTPTest();
 
   bool init(const char* url, const char* verb,
     const char* path, const char* proxy,
-    const char* content_type, const char* accept, const char* cookie);
+    const char* content_type, const char* accept, const char* cookie, const char* list_path);
   void report_parameters();
   void report_status(bool to_csv);
   void report_csv();
@@ -141,6 +141,8 @@ class SlowHTTPTest {
   bool is_dosed_;
   ProxyType proxy_type_;
   int debug_level_;
+  std::vector<std::string> value_;
+  bool is_listQuery_mode_;
 };
 
 }  // namespace slowhttptest

@@ -95,6 +95,11 @@ static void usage() {
       "  -w bytes        start of the range advertised window size would be picked from (1)\n"
       "  -y bytes        end of the range advertised window size would be picked from (512)\n"
       "  -z bytes        bytes to slow read from receive buffer with single read() call (5)\n"
+      "\nCustomized options:\n\n"
+      "  --listedQuery <file_name>\n"
+      "   Supply a file that contains a line-separated list of values. If supplied, a value\n"
+      "   will be picked randomly from the list, then it forms a key-value pair, \'q=<value>\',\n"
+      "   which is appended to the end of url.\n"
       );
 }
 
@@ -171,7 +176,17 @@ int main(int argc, char **argv) {
   ProxyType proxy_type = slowhttptest::eNoProxy;
   long tmp;
   int o;
-  while((o = getopt(argc, argv, ":HBRXgha:b:c:d:e:f:i:j:k:l:m:n:o:p:r:s:t:u:v:w:x:y:z:")) != -1) {
+
+  bool is_listQuery_mode  = false;
+  char list_path[1024]    = { -1 };
+
+  int long_options_index = -1;
+  static struct option long_options[] = {
+    {"listedQuery", required_argument, 0, 911},
+    {"version",     no_argument, 0, 901}
+  };
+  
+  while((o = getopt_long(argc, argv, ":HBRXgha:b:c:d:e:f:i:j:k:l:m:n:o:p:r:s:t:u:v:w:x:y:z:", long_options, &long_options_index)) != -1) {
     switch (o) {
       case 'a':
         if(!parse_int(range_start, 65539))
@@ -288,6 +303,28 @@ int main(int argc, char **argv) {
         if(!parse_int(read_len))
           return -1;
         break;
+      case 901:
+        printf( 
+                "\n"
+                "███████╗██╗      ██████╗ ██╗    ██╗██╗  ██╗████████╗████████╗██████╗ ████████╗███████╗███████╗████████╗\n"
+                "██╔════╝██║     ██╔═══██╗██║    ██║██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝\n"
+                "███████╗██║     ██║   ██║██║ █╗ ██║███████║   ██║      ██║   ██████╔╝   ██║   █████╗  ███████╗   ██║   \n"
+                "╚════██║██║     ██║   ██║██║███╗██║██╔══██║   ██║      ██║   ██╔═══╝    ██║   ██╔══╝  ╚════██║   ██║   \n"
+                "███████║███████╗╚██████╔╝╚███╔███╔╝██║  ██║   ██║      ██║   ██║        ██║   ███████╗███████║   ██║   \n"
+                "╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝        ╚═╝   ╚══════╝╚══════╝   ╚═╝   \n"
+        );
+        printf("Version     => %s 2022-10-06\n", VERSION);
+        printf("Bug Report  => %s\n", PACKAGE_BUGREPORT);
+        return -1;
+      case 911:
+        if(access(optarg, R_OK) == 0){
+          strncpy(list_path, optarg, 1023);
+          is_listQuery_mode = true;
+        }else{
+          printf("Couldn't read file: %s\n", optarg);
+          return -1;
+        }
+        break;
       case '?':
         printf("Illegal option -%c\n", optopt);
         info();
@@ -319,8 +356,8 @@ int main(int argc, char **argv) {
       conn_cnt, max_random_data_len, content_length,
       type, need_stats, pipeline_factor, probe_interval,
       range_start, range_limit, read_interval, read_len,
-      window_lower_limit, window_upper_limit, proxy_type, debug_level));
-  if(!slow_test->init(url, verb, path, proxy, content_type, accept, cookie)) {
+      window_lower_limit, window_upper_limit, proxy_type, debug_level, is_listQuery_mode));
+  if(!slow_test->init(url, verb, path, proxy, content_type, accept, cookie, list_path)) {
     slowlog(LOG_FATAL, "%s: error setting up slow HTTP test\n", __FUNCTION__);
     return -1;
   } else if(!slow_test->run_test()) {
