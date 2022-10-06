@@ -1,7 +1,9 @@
 ## Disclaimer ##
-This is a fork of [orginial SlowHTTPTest](https://github.com/shekyan/slowhttptest). Modified by RxnNode to suit the needs.
+This is a fork of [orginial SlowHTTPTest](https://github.com/shekyan/slowhttptest). Modified by RxnNode to suit the needs. **I don't own this.**
 
 Any actions and or activities related to the code provided is solely your responsibility.The misuse of the information in this website can result in criminal charges brought against the persons in question. The authors will not be held responsible in the event any criminal charges be brought against any individuals misusing the information in this tool to break the law.
+
+
 
 
 # SlowHTTPTest #
