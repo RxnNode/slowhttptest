@@ -4,8 +4,6 @@ This is a fork of [orginial SlowHTTPTest](https://github.com/shekyan/slowhttptes
 Any actions and or activities related to the code provided is solely your responsibility.The misuse of the information in this website can result in criminal charges brought against the persons in question. The authors will not be held responsible in the event any criminal charges be brought against any individuals misusing the information in this tool to break the law.
 
 
-
-
 # SlowHTTPTest #
 
 [![Build Status](https://travis-ci.org/shekyan/slowhttptest.svg?branch=master)](https://travis-ci.org/shekyan/slowhttptest)
@@ -23,5 +21,5 @@ Latest official image is available at [Docker Hub](https://hub.docker.com/reposi
 # Modified #
 
 + update user-agent and remove signatures
-+ **Listed Query** mode
-    Supply a file that contains a line-separated list of values. If upplied, a value will be picked randomly from the list, then t forms a key-value pair, 'q=<value>', which is appended to the end of url.
++ **Listed Query** mode  
+    Supply a file that contains a line-separated list of values. If supplied, a value will be picked randomly from the list, then t forms a key-value pair, 'q=\<value\>', which is appended to the end of url.
